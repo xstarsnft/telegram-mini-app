@@ -5,8 +5,8 @@ import { useTonConnect } from './hooks/useTonConnect';
 import { useCounterContract } from './hooks/useCounterContract';
 
 function App() {
-  const { connected } = useTonConnect();
-  const { info, countdown, address, sendStart, sendBid } = useCounterContract();
+  const { sender, connected } = useTonConnect();
+  const { info, countdown, address, sendStart, sendBid, sendWithdraw } = useCounterContract();
 
   return (
     <div className='App'>
@@ -26,31 +26,54 @@ function App() {
           <div>{countdown?.toFixed(2).toString() ?? 'Loading...'}</div>
           <b>Bank</b>
           <div>{info?.bank.toString() ?? 'Loading...'}</div>
+          {info?.state == "ONGOING" &&
+            <div>
+              <b>Challenger</b>
+              <div>{info?.challenger?.toString() ?? 'Loading...'}</div>
+            </div>
+          }
+          {info?.state == "ENDED" &&
+            <div>
+              <b>Winner</b>
+              <div>{info?.challenger?.toString() ?? 'Loading...'}</div>
+            </div>
+          }
         </div>
 
-        {info?.state && info?.state == "PREPARED" &&
+        {info?.state &&
           <div className='Card'>
-            <a
-              className={`Button ${connected ? 'Active' : 'Disabled'}`}
-              onClick={() => {
-                sendStart();
-              }}
-            >
-              Start
-            </a>
+            {info?.state == "PREPARED" &&
+              <a
+                className={`Button ${connected ? 'Active' : 'Disabled'}`}
+                onClick={() => {
+                  sendStart();
+                }}
+              >
+                Start
+              </a>
+            }
+            {info?.state == "ONGOING" &&
+              <a
+                className={`Button ${connected ? 'Active' : 'Disabled'}`}
+                onClick={() => {
+                  sendBid();
+                }}
+              >
+                Bid
+              </a>
+            }
+            {info?.state == "ENDED" && sender?.address && info?.challenger?.equals(sender?.address) &&
+              <a
+                className={`Button ${connected ? 'Active' : 'Disabled'}`}
+                onClick={() => {
+                  sendWithdraw();
+                }}
+              >
+                Withdraw
+              </a>
+            }
           </div>
         }
-
-        <div className='Card'>
-          <a
-            className={`Button ${connected ? 'Active' : 'Disabled'}`}
-            onClick={() => {
-              sendBid();
-            }}
-          >
-            Bid
-          </a>
-        </div>
       </div>
     </div>
   );

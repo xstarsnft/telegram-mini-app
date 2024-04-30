@@ -26,17 +26,10 @@ export function useCounterContract() {
       console.log("QUERY");
       try {
         if (!counterContract) return;
-        //   setInfo(null);
         const info = await counterContract.getInfo();
         setInfo(info);
-        // const timestamp = new Date().getTime() / 1000;
-        // setCountdown(Number(info.expiration) - timestamp);
       } catch (e: unknown) {
-        // if (info) {
-        //     console.log("FINALLY");
-        //     const timestamp = new Date().getTime() / 1000;
-        //     setCountdown(Number(info.expiration) - timestamp);
-        // }
+        //
       }
       await sleep(1000); // sleep 5 seconds and poll value again
       await getInfo();
@@ -76,6 +69,15 @@ export function useCounterContract() {
             value: toNano('0.1'),
         },
         'bid',
+      );
+    },
+    sendWithdraw: () => {
+      return counterContract?.send(
+        sender,
+        {
+            value: toNano('0.1'),
+        },
+        'withdraw',
       );
     },
   };
