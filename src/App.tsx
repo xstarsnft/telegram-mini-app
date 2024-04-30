@@ -1,5 +1,6 @@
 import '@twa-dev/sdk';
 import './App.css';
+import { fromNano } from '@ton/core';
 import { TonConnectButton } from '@tonconnect/ui-react';
 import { useTonConnect } from './hooks/useTonConnect';
 import { useCounterContract } from './hooks/useCounterContract';
@@ -25,7 +26,7 @@ function App() {
           <div>{info?.expiration.toString() ?? 'Loading...'}</div>
           <div>{countdown?.toFixed(2).toString() ?? 'Loading...'}</div>
           <b>Bank</b>
-          <div>{info?.bank.toString() ?? 'Loading...'}</div>
+          <div>{info?.bank ? fromNano(info?.bank).toString() + ' TON' : 'Loading...'}</div>
           {info?.state == "ONGOING" &&
             <div>
               <b>Challenger</b>
@@ -59,7 +60,7 @@ function App() {
                   sendBid();
                 }}
               >
-                Bid
+                Bid 0.01 TON
               </a>
             }
             {info?.state == "ENDED" && sender?.address && info?.challenger?.equals(sender?.address) &&
