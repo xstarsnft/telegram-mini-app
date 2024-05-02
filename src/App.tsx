@@ -22,21 +22,32 @@ function App() {
         <div className='Card'>
           <b>Game state</b>
           <div>{info?.state ?? 'Loading...'}</div>
-          <b>Expiration</b>
-          <div>{info?.expiration.toString() ?? 'Loading...'}</div>
-          <div>{countdown?.toFixed(2).toString() ?? 'Loading...'}</div>
+          {info?.state == "ONGOING" && countdown && countdown >= 0 &&
+            <div>
+              <b>Countdown</b>
+              <div>{countdown?.toFixed(2).toString() ?? 'Loading...'}</div>
+            </div>
+          }
           <b>Bank</b>
           <div>{info?.bank ? fromNano(info?.bank).toString() + ' TON' : 'Loading...'}</div>
           {info?.state == "ONGOING" &&
             <div>
               <b>Challenger</b>
               <div>{info?.challenger?.toString() ?? 'Loading...'}</div>
+              {sender?.address && info?.challenger?.equals(sender?.address) ?
+                <div>This is you</div> :
+                <div>This someone else</div>
+              }
             </div>
           }
           {info?.state == "ENDED" &&
             <div>
               <b>Winner</b>
               <div>{info?.challenger?.toString() ?? 'Loading...'}</div>
+              {sender?.address && info?.challenger?.equals(sender?.address) ?
+                <div>This is you</div> :
+                <div>This someone else</div>
+              }
             </div>
           }
         </div>
