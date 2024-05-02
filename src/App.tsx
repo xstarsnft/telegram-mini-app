@@ -36,7 +36,7 @@ function App() {
               <div>{info?.challenger?.toString() ?? 'Loading...'}</div>
               {sender?.address && info?.challenger?.equals(sender?.address) ?
                 <div>This is you</div> :
-                <div>This someone else</div>
+                <div>This someone else. Bid to have a chance at winning</div>
               }
             </div>
           }
