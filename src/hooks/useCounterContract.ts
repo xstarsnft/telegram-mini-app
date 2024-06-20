@@ -8,10 +8,7 @@ import { Address, OpenedContract, toNano } from '@ton/core';
 export function useCounterContract() {
   const client = useTonClient();
   const [info, setInfo] = useState<null | Info>();
-  const [countdown, setCountdown] = useState<null | number>();
   const { sender } = useTonConnect();
-
-  const sleep = (time: number) => new Promise((resolve) => setTimeout(resolve, time));
 
   const counterContract = useAsyncInitialize(async () => {
     if (!client) return;
@@ -31,33 +28,25 @@ export function useCounterContract() {
       } catch (e: unknown) {
         //
       }
-      await sleep(1000); // sleep 5 seconds and poll value again
-      await getInfo();
     }
-    getInfo();
-  }, [counterContract]);
 
-  useEffect(() => {
-    async function updateCountdown() {
-        const timestamp = new Date().getTime() / 1000;
-        if (info) {
-            setCountdown(Number(info.expiration) - timestamp);
-        }
-        await sleep(100);
-        await updateCountdown();
+    if (counterContract) {
+      const interval = setInterval(() => {
+        getInfo();
+      }, 2000);
+
+      return () => clearInterval(interval);
     }
-    updateCountdown();
-  });
+  }, [counterContract]);
 
   return {
     info: info,
-    countdown: countdown,
     address: counterContract?.address.toString(),
     sendStart: () => {
       return counterContract?.send(
         sender,
         {
-            value: toNano('0.1'),
+          value: toNano('0.1'),
         },
         'start',
       );
@@ -66,7 +55,7 @@ export function useCounterContract() {
       return counterContract?.send(
         sender,
         {
-            value: toNano('0.1'),
+          value: toNano('0.1'),
         },
         'bid',
       );
@@ -75,7 +64,7 @@ export function useCounterContract() {
       return counterContract?.send(
         sender,
         {
-            value: toNano('0.1'),
+          value: toNano('0.1'),
         },
         'withdraw',
       );
