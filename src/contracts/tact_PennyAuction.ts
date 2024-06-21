@@ -1,4 +1,3 @@
-//@ts-nocheck
 import { 
     Cell,
     Slice, 
@@ -418,6 +417,7 @@ function dictValueParserFactoryDeploy(): DictionaryValue<FactoryDeploy> {
 
 export type Info = {
     $$type: 'Info';
+    bid: bigint;
     state: string;
     expiration: bigint;
     bank: bigint;
@@ -427,7 +427,8 @@ export type Info = {
 export function storeInfo(src: Info) {
     return (builder: Builder) => {
         let b_0 = builder;
-        b_0.storeUint(4012972206, 32);
+        b_0.storeUint(733664254, 32);
+        b_0.storeInt(src.bid, 257);
         b_0.storeStringRefTail(src.state);
         b_0.storeUint(src.expiration, 32);
         b_0.storeInt(src.bank, 257);
@@ -437,24 +438,27 @@ export function storeInfo(src: Info) {
 
 export function loadInfo(slice: Slice) {
     let sc_0 = slice;
-    if (sc_0.loadUint(32) !== 4012972206) { throw Error('Invalid prefix'); }
+    if (sc_0.loadUint(32) !== 733664254) { throw Error('Invalid prefix'); }
+    let _bid = sc_0.loadIntBig(257);
     let _state = sc_0.loadStringRefTail();
     let _expiration = sc_0.loadUintBig(32);
     let _bank = sc_0.loadIntBig(257);
     let _challenger = sc_0.loadMaybeAddress();
-    return { $$type: 'Info' as const, state: _state, expiration: _expiration, bank: _bank, challenger: _challenger };
+    return { $$type: 'Info' as const, bid: _bid, state: _state, expiration: _expiration, bank: _bank, challenger: _challenger };
 }
 
 function loadTupleInfo(source: TupleReader) {
+    let _bid = source.readBigNumber();
     let _state = source.readString();
     let _expiration = source.readBigNumber();
     let _bank = source.readBigNumber();
     let _challenger = source.readAddressOpt();
-    return { $$type: 'Info' as const, state: _state, expiration: _expiration, bank: _bank, challenger: _challenger };
+    return { $$type: 'Info' as const, bid: _bid, state: _state, expiration: _expiration, bank: _bank, challenger: _challenger };
 }
 
 function storeTupleInfo(source: Info) {
     let builder = new TupleBuilder();
+    builder.writeNumber(source.bid);
     builder.writeString(source.state);
     builder.writeNumber(source.expiration);
     builder.writeNumber(source.bank);
@@ -473,30 +477,32 @@ function dictValueParserInfo(): DictionaryValue<Info> {
     }
 }
 
- type SimpleCounter_init_args = {
-    $$type: 'SimpleCounter_init_args';
-    id: bigint;
+ type PennyAuction_init_args = {
+    $$type: 'PennyAuction_init_args';
+    initialBank: bigint;
+    bid: bigint;
 }
 
-function initSimpleCounter_init_args(src: SimpleCounter_init_args) {
+function initPennyAuction_init_args(src: PennyAuction_init_args) {
     return (builder: Builder) => {
         let b_0 = builder;
-        b_0.storeInt(src.id, 257);
+        b_0.storeInt(src.initialBank, 257);
+        b_0.storeInt(src.bid, 257);
     };
 }
 
-async function SimpleCounter_init(id: bigint) {
-    const __code = Cell.fromBase64('te6ccgECHgEABSQAART/APSkE/S88sgLAQIBYgIDA3rQAdDTAwFxsKMB+kABINdJgQELuvLgiCDXCwoggQT/uvLQiYMJuvLgiFRQUwNvBPhhAvhi2zxVE9s88uCCFwQFAgEgDxACoO2i7fsBkjB/4HAh10nCH5UwINcLH94gghCUapi2uo6oMNMfAYIQlGqYtrry4IHTPwExyAGCEK/5D1dYyx/LP8n4QgFwbds8f+DAAJEw4w1wBgcAwMj4QwHMfwHKAFUwUEMg10mBAQu68uCIINcLCiCBBP+68tCJgwm68uCIzxaBAQHPABLLHwEgbpUwcAHLAY4eINdJgQELuvLgiCDXCwoggQT/uvLQiYMJuvLgiM8W4sntVAE6bW0ibrOZWyBu8tCAbyIBkTLiECRwAwSAQlAj2zwNBNj5ASCC8PdwBzPHnf0inflfHlXi0SUsOC8NPCjcsgVjhF6MLZhGuo/CMNs8gTvOi4UFJFUEFSRUSFUx2zxsMRIB+QEB+QG6EvL0gWzM+EFvJBNfA4IJycOAvvL0ggkxLQD4I6Z4Its8f9sx4CAIFgoJABL4QlJAxwXy4IQD0oLwqji74Zx6E0aq7SaCNzznMcMR/ZNgIiQgw9rsppDkweO6j0MwggDpKYt09OR09JTkeFUx2zxsIRMB+QEB+QG6E/L0ggC5wfhBbyQTXwOCCJiWgL7y9IIImJaAoPgjpnj4Qts8f9sx4BYKCwEu+EJ/+CdvEIIImJaAoSWhchAjbW1t2zwNAUqC8AlRkBlK7mEc6JXFUDrfhf2GTeeQV0YUL2CNPrL6rRTkuuMCDAPIggDuT4tUVOREVEhVMds8MlBEAfkBAfkBuhTy9IIA8BL4QhMhbpJbcJLHBeIS8vT4I6Z4UxKnMoBkqQQkpwqAZKkEXKAWoX9URRdyECNtbW3bPPhCf1iAQhAjbW1t2zwQI3/bMRYNDQHKyHEBygFQBwHKAHABygJQBSDXSYEBC7ry4Igg1wsKIIEE/7ry0ImDCbry4IjPFlAD+gJwAcpoI26zkX+TJG6z4pczMwFwAcoA4w0hbrOcfwHKAAEgbvLQgAHMlTFwAcoA4skB+wAOAJh/AcoAyHABygBwAcoAJG6znX8BygAEIG7y0IBQBMyWNANwAcoA4iRus51/AcoABCBu8tCAUATMljQDcAHKAOJwAcoAAn8BygACyVjMAgEgERICASAaGwIBIBMUAhG4Ud2zzbPGxBgXGAIRtsFbZ5tnjYiQFxUCEbXiu2ebZ42IMBcWARRUcyEjVTPbPDQSFgBeIcAAmouFBSRVBBUkVEjg+CMiuZF/lvgjIqZ4vOKZi3T05HT0lOR44ItUVOREVEgB8u1E0NQB+GPSAAGOV/pAASDXSYEBC7ry4Igg1wsKIIEE/7ry0ImDCbry4IgBgQEB1wDTH/pAIdcLAcMAjh0BINdJgQELuvLgiCDXCwoggQT/uvLQiYMJuvLgiJIxbeIUQzBsFOD4KNcLCoMJuvLgiYEBAdcAAQHR2zwZAAIjABAwcG34QlQiEwC5u70YJwXOw9XSyuex6E7DnWSoUbZoJwndY1LStkfLMi068t/fFiOYJwIFXAG4BnY5TOWDquRyWyw4JwnZdOWrNOy3M6DpZtlGbopIJwQM51aecV+dJQsB1hbiZHsoAgFIHB0AEbCvu1E0NIAAYAB1sm7jQ1aXBmczovL1FtZDY1OHNOVHlXaGsxNGh4d1hpTm00RGh6Z1RvUDh4V3o0S1pxb2RxbUp4eG2CA=');
-    const __system = Cell.fromBase64('te6cckECIAEABS4AAQHAAQEFoJ0fAgEU/wD0pBP0vPLICwMCAWIRBAIBIAoFAgEgCQYCAUgIBwB1sm7jQ1aXBmczovL1FtZDY1OHNOVHlXaGsxNGh4d1hpTm00RGh6Z1RvUDh4V3o0S1pxb2RxbUp4eG2CAAEbCvu1E0NIAAYAC5u70YJwXOw9XSyuex6E7DnWSoUbZoJwndY1LStkfLMi068t/fFiOYJwIFXAG4BnY5TOWDquRyWyw4JwnZdOWrNOy3M6DpZtlGbopIJwQM51aecV+dJQsB1hbiZHsoAgEgDQsCEbhR3bPNs8bEGB4MAAIjAgEgDw4CEbXiu2ebZ42IMB4ZAhG2wVtnm2eNiJAeEAEUVHMhI1Uz2zw0EhkDetAB0NMDAXGwowH6QAEg10mBAQu68uCIINcLCiCBBP+68tCJgwm68uCIVFBTA28E+GEC+GLbPFUT2zzy4IIeExIAwMj4QwHMfwHKAFUwUEMg10mBAQu68uCIINcLCiCBBP+68tCJgwm68uCIzxaBAQHPABLLHwEgbpUwcAHLAY4eINdJgQELuvLgiCDXCwoggQT/uvLQiYMJuvLgiM8W4sntVAKg7aLt+wGSMH/gcCHXScIflTAg1wsf3iCCEJRqmLa6jqgw0x8BghCUapi2uvLggdM/ATHIAYIQr/kPV1jLH8s/yfhCAXBt2zx/4MAAkTDjDXAbFATY+QEggvD3cAczx539Ip35Xx5V4tElLDgvDTwo3LIFY4RejC2YRrqPwjDbPIE7zouFBSRVBBUkVEhVMds8bDESAfkBAfkBuhLy9IFszPhBbyQTXwOCCcnDgL7y9IIJMS0A+COmeCLbPH/bMeAgGhkYFQPSgvCqOLvhnHoTRqrtJoI3POcxwxH9k2AiJCDD2uymkOTB47qPQzCCAOkpi3T05HT0lOR4VTHbPGwhEwH5AQH5AboT8vSCALnB+EFvJBNfA4IImJaAvvL0ggiYloCg+COmePhC2zx/2zHgGRgWAUqC8AlRkBlK7mEc6JXFUDrfhf2GTeeQV0YUL2CNPrL6rRTkuuMCFwPIggDuT4tUVOREVEhVMds8MlBEAfkBAfkBuhTy9IIA8BL4QhMhbpJbcJLHBeIS8vT4I6Z4UxKnMoBkqQQkpwqAZKkEXKAWoX9URRdyECNtbW3bPPhCf1iAQhAjbW1t2zwQI3/bMRkcHAEu+EJ/+CdvEIIImJaAoSWhchAjbW1t2zwcAF4hwACai4UFJFUEFSRUSOD4IyK5kX+W+CMipni84pmLdPTkdPSU5Hjgi1RU5ERUSAAS+EJSQMcF8uCEATptbSJus5lbIG7y0IBvIgGRMuIQJHADBIBCUCPbPBwByshxAcoBUAcBygBwAcoCUAUg10mBAQu68uCIINcLCiCBBP+68tCJgwm68uCIzxZQA/oCcAHKaCNus5F/kyRus+KXMzMBcAHKAOMNIW6znH8BygABIG7y0IABzJUxcAHKAOLJAfsAHQCYfwHKAMhwAcoAcAHKACRus51/AcoABCBu8tCAUATMljQDcAHKAOIkbrOdfwHKAAQgbvLQgFAEzJY0A3ABygDicAHKAAJ/AcoAAslYzAHy7UTQ1AH4Y9IAAY5X+kABINdJgQELuvLgiCDXCwoggQT/uvLQiYMJuvLgiAGBAQHXANMf+kAh1wsBwwCOHQEg10mBAQu68uCIINcLCiCBBP+68tCJgwm68uCIkjFt4hRDMGwU4Pgo1wsKgwm68uCJgQEB1wABAdHbPB8AEDBwbfhCVCITbXABkg==');
+async function PennyAuction_init(initialBank: bigint, bid: bigint) {
+    const __code = Cell.fromBase64('te6ccgECIwEABYUAART/APSkE/S88sgLAQIBYgIDA3rQAdDTAwFxsKMB+kABINdJgQELuvLgiCDXCwoggQT/uvLQiYMJuvLgiFRQUwNvBPhhAvhi2zxVFds88uCCGwQFAgEgEBECoO2i7fsBkjB/4HAh10nCH5UwINcLH94gghCUapi2uo6oMNMfAYIQlGqYtrry4IHTPwExyAGCEK/5D1dYyx/LP8n4QgFwbds8f+DAAJEw4w1wBgcA4Mj4QwHMfwHKAFVQUGUg10mBAQu68uCIINcLCiCBBP+68tCJgwm68uCIzxYTgQEBzwCBAQHPAAHIgQEBzwATyx8BIG6VMHABywGOHiDXSYEBC7ry4Igg1wsKIIEE/7ry0ImDCbry4IjPFuLJAczJ7VQBOm1tIm6zmVsgbvLQgG8iAZEy4hAkcAMEgEJQI9s8DgTc+QEggvD3cAczx539Ip35Xx5V4tElLDgvDTwo3LIFY4RejC2YRrqPxDDbPIE7zouFBSRVBBUkVEhVUds8bDEUAfkBAfkBuhTy9IFszPhBbyQTXwOCCJiWgCSgvvL0IfgjpngiEDUQNNs8f9sx4CAIFw0JABL4QlJgxwXy4IQCooLwqji74Zx6E0aq7SaCNzznMcMR/ZNgIiQgw9rsppDkweO6joYw2zx/2zHggvAJUZAZSu5hHOiVxVA634X9hk3nkFdGFC9gjT6y+q0U5LrjAgoLBJCCAOkpi3T05HT0lOR4VVHbPBcB+QEB+QG6F/L0ggC5wfhBbyQTXwNQdts8F74X8vQgEEUQNEFmA9s8bDEUoPgjpnj4QhBFEDQXHBwMA9CCAO5Pi1RU5ERUSFVR2zwyUGYB+QEB+QG6FvL0ggDwEvhCFSFukltwkscF4hTy9PgjpnhTJKcygGSpBCanCoBkqQRcoBihf1RGGXIQI21tbds8+EJ/WIBCECNtbW3bPBA1ECQQI3/bMRcODgEE2zwNAS74Qn/4J28QggiYloChJaFyECNtbW3bPA4ByshxAcoBUAcBygBwAcoCUAUg10mBAQu68uCIINcLCiCBBP+68tCJgwm68uCIzxZQA/oCcAHKaCNus5F/kyRus+KXMzMBcAHKAOMNIW6znH8BygABIG7y0IABzJUxcAHKAOLJAfsADwCYfwHKAMhwAcoAcAHKACRus51/AcoABCBu8tCAUATMljQDcAHKAOIkbrOdfwHKAAQgbvLQgFAEzJY0A3ABygDicAHKAAJ/AcoAAslYzAIBIBITAgEgHyACASAUFQIBIBgZAhG2wVtnm2eNjLAbFgIRteK7Z5tnjYwwGxcCJlR1Q1R1Q1VV2zxVUNs8NDQ0QwMcFwBeIcAAmouFBSRVBBUkVEjg+CMiuZF/lvgjIqZ4vOKZi3T05HT0lOR44ItUVOREVEgCEbSju2ebZ42MMBsaAhG1E3tnm2eNjDAbHAACJQH07UTQ1AH4Y9IAAY5o+kABINdJgQELuvLgiCDXCwoggQT/uvLQiYMJuvLgiAGBAQHXAIEBAdcA1AHQgQEB1wDTH/pAIdcLAcMAjh0BINdJgQELuvLgiCDXCwoggQT/uvLQiYMJuvLgiJIxbeIxEDYQNRA0bBbg+CjXCwodAAIkASyDCbry4ImBAQHXAIEBAdcAWQLRAds8HgAQcG34QlIlQxMAubu9GCcFzsPV0srnsehOw51kqFG2aCcJ3WNS0rZHyzItOvLf3xYjmCcCBVwBuAZ2OUzlg6rkclssOCcJ2XTlqzTstzOg6WbZRm6KSCcEDOdWnnFfnSULAdYW4mR7KAIBSCEiABGwr7tRNDSAAGAAdbJu40NWlwZnM6Ly9RbVJMQ2lTNkRhdlJnajFCb3MzOVB4VzFYUU5NREtmMTJQclpQRWdyMzJZcHQ0gg');
+    const __system = Cell.fromBase64('te6cckECJQEABY8AAQHAAQEFoCQzAgEU/wD0pBP0vPLICwMCAWITBAIBIAoFAgEgCQYCAUgIBwB1sm7jQ1aXBmczovL1FtUkxDaVM2RGF2UmdqMUJvczM5UHhXMVhRTk1ES2YxMlByWlBFZ3IzMllwdDSCAAEbCvu1E0NIAAYAC5u70YJwXOw9XSyuex6E7DnWSoUbZoJwndY1LStkfLMi068t/fFiOYJwIFXAG4BnY5TOWDquRyWyw4JwnZdOWrNOy3M6DpZtlGbopIJwQM51aecV+dJQsB1hbiZHsoAgEgDwsCASANDAIRtRN7Z5tnjYwwIhsCEbSju2ebZ42MMCIOAAIlAgEgERACEbXiu2ebZ42MMCIdAhG2wVtnm2eNjLAiEgImVHVDVHVDVVXbPFVQ2zw0NDRDAxsdA3rQAdDTAwFxsKMB+kABINdJgQELuvLgiCDXCwoggQT/uvLQiYMJuvLgiFRQUwNvBPhhAvhi2zxVFds88uCCIhUUAODI+EMBzH8BygBVUFBlINdJgQELuvLgiCDXCwoggQT/uvLQiYMJuvLgiM8WE4EBAc8AgQEBzwAByIEBAc8AE8sfASBulTBwAcsBjh4g10mBAQu68uCIINcLCiCBBP+68tCJgwm68uCIzxbiyQHMye1UAqDtou37AZIwf+BwIddJwh+VMCDXCx/eIIIQlGqYtrqOqDDTHwGCEJRqmLa68uCB0z8BMcgBghCv+Q9XWMsfyz/J+EIBcG3bPH/gwACRMOMNcB8WBNz5ASCC8PdwBzPHnf0inflfHlXi0SUsOC8NPCjcsgVjhF6MLZhGuo/EMNs8gTvOi4UFJFUEFSRUSFVR2zxsMRQB+QEB+QG6FPL0gWzM+EFvJBNfA4IImJaAJKC+8vQh+COmeCIQNRA02zx/2zHgIB4dHBcCooLwqji74Zx6E0aq7SaCNzznMcMR/ZNgIiQgw9rsppDkweO6joYw2zx/2zHggvAJUZAZSu5hHOiVxVA634X9hk3nkFdGFC9gjT6y+q0U5LrjAhkYA9CCAO5Pi1RU5ERUSFVR2zwyUGYB+QEB+QG6FvL0ggDwEvhCFSFukltwkscF4hTy9PgjpnhTJKcygGSpBCanCoBkqQRcoBihf1RGGXIQI21tbds8+EJ/WIBCECNtbW3bPBA1ECQQI3/bMR0gIASQggDpKYt09OR09JTkeFVR2zwXAfkBAfkBuhfy9IIAucH4QW8kE18DUHbbPBe+F/L0IBBFEDRBZgPbPGwxFKD4I6Z4+EIQRRA0HRsbGgEE2zwcAAIkAS74Qn/4J28QggiYloChJaFyECNtbW3bPCAAXiHAAJqLhQUkVQQVJFRI4PgjIrmRf5b4IyKmeLzimYt09OR09JTkeOCLVFTkRFRIABL4QlJgxwXy4IQBOm1tIm6zmVsgbvLQgG8iAZEy4hAkcAMEgEJQI9s8IAHKyHEBygFQBwHKAHABygJQBSDXSYEBC7ry4Igg1wsKIIEE/7ry0ImDCbry4IjPFlAD+gJwAcpoI26zkX+TJG6z4pczMwFwAcoA4w0hbrOcfwHKAAEgbvLQgAHMlTFwAcoA4skB+wAhAJh/AcoAyHABygBwAcoAJG6znX8BygAEIG7y0IBQBMyWNANwAcoA4iRus51/AcoABCBu8tCAUATMljQDcAHKAOJwAcoAAn8BygACyVjMAfTtRNDUAfhj0gABjmj6QAEg10mBAQu68uCIINcLCiCBBP+68tCJgwm68uCIAYEBAdcAgQEB1wDUAdCBAQHXANMf+kAh1wsBwwCOHQEg10mBAQu68uCIINcLCiCBBP+68tCJgwm68uCIkjFt4jEQNhA1EDRsFuD4KNcLCiMBLIMJuvLgiYEBAdcAgQEB1wBZAtEB2zwkABBwbfhCUiVDE0m0f7A=');
     let builder = beginCell();
     builder.storeRef(__system);
     builder.storeUint(0, 1);
-    initSimpleCounter_init_args({ $$type: 'SimpleCounter_init_args', id })(builder);
+    initPennyAuction_init_args({ $$type: 'PennyAuction_init_args', initialBank, bid })(builder);
     const __data = builder.endCell();
     return { code: __code, data: __data };
 }
 
-const SimpleCounter_errors: { [key: number]: { message: string } } = {
+const PennyAuction_errors: { [key: number]: { message: string } } = {
     2: { message: `Stack undeflow` },
     3: { message: `Stack overflow` },
     4: { message: `Integer overflow` },
@@ -529,7 +535,7 @@ const SimpleCounter_errors: { [key: number]: { message: string } } = {
     61458: { message: `Only winner can withdraw` },
 }
 
-const SimpleCounter_types: ABIType[] = [
+const PennyAuction_types: ABIType[] = [
     {"name":"StateInit","header":null,"fields":[{"name":"code","type":{"kind":"simple","type":"cell","optional":false}},{"name":"data","type":{"kind":"simple","type":"cell","optional":false}}]},
     {"name":"Context","header":null,"fields":[{"name":"bounced","type":{"kind":"simple","type":"bool","optional":false}},{"name":"sender","type":{"kind":"simple","type":"address","optional":false}},{"name":"value","type":{"kind":"simple","type":"int","optional":false,"format":257}},{"name":"raw","type":{"kind":"simple","type":"slice","optional":false}}]},
     {"name":"SendParameters","header":null,"fields":[{"name":"bounce","type":{"kind":"simple","type":"bool","optional":false}},{"name":"to","type":{"kind":"simple","type":"address","optional":false}},{"name":"value","type":{"kind":"simple","type":"int","optional":false,"format":257}},{"name":"mode","type":{"kind":"simple","type":"int","optional":false,"format":257}},{"name":"body","type":{"kind":"simple","type":"cell","optional":true}},{"name":"code","type":{"kind":"simple","type":"cell","optional":true}},{"name":"data","type":{"kind":"simple","type":"cell","optional":true}}]},
@@ -538,45 +544,46 @@ const SimpleCounter_types: ABIType[] = [
     {"name":"Deploy","header":2490013878,"fields":[{"name":"queryId","type":{"kind":"simple","type":"uint","optional":false,"format":64}}]},
     {"name":"DeployOk","header":2952335191,"fields":[{"name":"queryId","type":{"kind":"simple","type":"uint","optional":false,"format":64}}]},
     {"name":"FactoryDeploy","header":1829761339,"fields":[{"name":"queryId","type":{"kind":"simple","type":"uint","optional":false,"format":64}},{"name":"cashback","type":{"kind":"simple","type":"address","optional":false}}]},
-    {"name":"Info","header":4012972206,"fields":[{"name":"state","type":{"kind":"simple","type":"string","optional":false}},{"name":"expiration","type":{"kind":"simple","type":"uint","optional":false,"format":32}},{"name":"bank","type":{"kind":"simple","type":"int","optional":false,"format":257}},{"name":"challenger","type":{"kind":"simple","type":"address","optional":true}}]},
+    {"name":"Info","header":733664254,"fields":[{"name":"bid","type":{"kind":"simple","type":"int","optional":false,"format":257}},{"name":"state","type":{"kind":"simple","type":"string","optional":false}},{"name":"expiration","type":{"kind":"simple","type":"uint","optional":false,"format":32}},{"name":"bank","type":{"kind":"simple","type":"int","optional":false,"format":257}},{"name":"challenger","type":{"kind":"simple","type":"address","optional":true}}]},
 ]
 
-const SimpleCounter_getters: ABIGetter[] = [
+const PennyAuction_getters: ABIGetter[] = [
+    {"name":"bid","arguments":[],"returnType":{"kind":"simple","type":"int","optional":false,"format":257}},
     {"name":"state","arguments":[],"returnType":{"kind":"simple","type":"string","optional":false}},
     {"name":"info","arguments":[],"returnType":{"kind":"simple","type":"Info","optional":false}},
     {"name":"owner","arguments":[],"returnType":{"kind":"simple","type":"address","optional":false}},
 ]
 
-const SimpleCounter_receivers: ABIReceiver[] = [
+const PennyAuction_receivers: ABIReceiver[] = [
     {"receiver":"internal","message":{"kind":"text","text":"start"}},
     {"receiver":"internal","message":{"kind":"text","text":"bid"}},
     {"receiver":"internal","message":{"kind":"text","text":"withdraw"}},
     {"receiver":"internal","message":{"kind":"typed","type":"Deploy"}},
 ]
 
-export class SimpleCounter implements Contract {
+export class PennyAuction implements Contract {
     
-    static async init(id: bigint) {
-        return await SimpleCounter_init(id);
+    static async init(initialBank: bigint, bid: bigint) {
+        return await PennyAuction_init(initialBank, bid);
     }
     
-    static async fromInit(id: bigint) {
-        const init = await SimpleCounter_init(id);
+    static async fromInit(initialBank: bigint, bid: bigint) {
+        const init = await PennyAuction_init(initialBank, bid);
         const address = contractAddress(0, init);
-        return new SimpleCounter(address, init);
+        return new PennyAuction(address, init);
     }
     
     static fromAddress(address: Address) {
-        return new SimpleCounter(address);
+        return new PennyAuction(address);
     }
     
     readonly address: Address; 
     readonly init?: { code: Cell, data: Cell };
     readonly abi: ContractABI = {
-        types:  SimpleCounter_types,
-        getters: SimpleCounter_getters,
-        receivers: SimpleCounter_receivers,
-        errors: SimpleCounter_errors,
+        types:  PennyAuction_types,
+        getters: PennyAuction_getters,
+        receivers: PennyAuction_receivers,
+        errors: PennyAuction_errors,
     };
     
     private constructor(address: Address, init?: { code: Cell, data: Cell }) {
@@ -603,6 +610,13 @@ export class SimpleCounter implements Contract {
         
         await provider.internal(via, { ...args, body: body });
         
+    }
+    
+    async getBid(provider: ContractProvider) {
+        let builder = new TupleBuilder();
+        let source = (await provider.get('bid', builder.build())).stack;
+        let result = source.readBigNumber();
+        return result;
     }
     
     async getState(provider: ContractProvider) {

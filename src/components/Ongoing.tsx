@@ -13,7 +13,7 @@ export function Ongoing({connected, is_challenger}: Props) {
     <div>
       <div className='Card'>
         <b>Bank</b>
-        <div>{info?.bank ? fromNano(info?.bank * 5n / 10n) + ' TON' : 'Loading...'}</div>
+        <div>{info.bank ? fromNano(info.bank * 5n / 10n) + ' TON' : 'Loading...'}</div>
       </div>
       {
         (() => {
@@ -33,7 +33,7 @@ export function Ongoing({connected, is_challenger}: Props) {
             <div className='Card'>
               <p>Bid to claim for yourself</p>
               <a className={`Button ${connected ? 'Active' : 'Disabled'}`} onClick={() => sendBid()}>
-                0.01 TON
+                {fromNano(info.bid)} TON
               </a>
             </div>
           </div>

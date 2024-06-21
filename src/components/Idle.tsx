@@ -7,7 +7,7 @@ type Props = {
 };
 
 export function Idle({connected, bank}: Props) {
-  const { sendBid } = useContract();
+  const { info, sendBid } = useContract();
 
   return (
     <div>
@@ -19,7 +19,7 @@ export function Idle({connected, bank}: Props) {
       <div className='Card'>
         <p>Bid to claim for yourself</p>
         <a className={`Button ${connected ? 'Active' : 'Disabled'}`} onClick={() => sendBid()}>
-          0.01 TON
+          {fromNano(info.bid)} TON
         </a>
       </div>
     </div>

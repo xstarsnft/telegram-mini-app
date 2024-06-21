@@ -13,7 +13,7 @@ export function Ended({connected, is_challenger}: Props) {
   if (is_challenger && remaining && remaining > 0) return <>
     <div className='Card'>
       <b>Congratulations, you have won!</b>
-      <div>Prize: {info?.bank ? fromNano(info?.bank * 5n / 10n) + ' TON' : 'Loading...'}</div>
+      <div>Prize: {info.bank ? fromNano(info.bank * 5n / 10n) + ' TON' : 'Loading...'}</div>
     </div>
     <div className='Card'>
       <div>You have {remaining.toFixed(1)} seconds to withdraw.</div>
@@ -30,6 +30,6 @@ export function Ended({connected, is_challenger}: Props) {
   else return <div className='Card'>
     <b>Game over!</b>
     <div>Game will restart shortly!</div>
-    <div>Next bank: {info?.bank ? fromNano(info?.bank * (is_challenger ? 5n :4n) / 10n) + ' TON' : 'Loading...'}</div>
+    <div>Next bank: {info.bank ? fromNano(info.bank * (is_challenger ? 5n :4n) / 10n) + ' TON' : 'Loading...'}</div>
   </div>
 }

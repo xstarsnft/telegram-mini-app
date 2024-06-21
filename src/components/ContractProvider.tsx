@@ -1,9 +1,9 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { Info } from '../contracts/penny';
+import { Info } from '../contracts/tact_PennyAuction';
 import { useCounterContract } from '../hooks/useCounterContract';
 
 interface IContractContext {
-  info: Info | null | undefined,
+  info: Info,
   address: string | undefined,
   countdown: number | null | undefined,
   sendStart: () => Promise<void> | undefined,

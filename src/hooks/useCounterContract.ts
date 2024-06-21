@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Info, SimpleCounter } from '../contracts/penny';
+import { Info, PennyAuction } from '../contracts/tact_PennyAuction';
 import { useTonClient } from './useTonClient';
 import { useAsyncInitialize } from './useAsyncInitialize';
 import { useTonConnect } from './useTonConnect';
@@ -7,43 +7,43 @@ import { Address, OpenedContract, toNano } from '@ton/core';
 
 export function useCounterContract() {
   const client = useTonClient();
-  const [info, setInfo] = useState<null | Info>();
+  const [info, setInfo] = useState<Info>({} as Info);
   const { sender } = useTonConnect();
 
-  const counterContract = useAsyncInitialize(async () => {
+  const contract = useAsyncInitialize(async () => {
     if (!client) return;
-    const contract = SimpleCounter.fromAddress(
-      Address.parse('EQCdQwH3sxp_ziAyXQiAHYn8igJbwqM4_NDFRI92WOOlL1C6')
+    const contract = PennyAuction.fromAddress(
+      Address.parse('EQBt31E0iAW4Hw-PqXyaJu7oDCmfVyQ5DxhauTieofYsN_Ig')
     );
-    return client.open(contract) as OpenedContract<SimpleCounter>;
+    return client.open(contract) as OpenedContract<PennyAuction>;
   }, [client]);
 
   useEffect(() => {
     async function getInfo() {
       console.log("QUERY");
       try {
-        if (!counterContract) return;
-        const info = await counterContract.getInfo();
+        if (!contract) return;
+        const info = await contract.getInfo();
         setInfo(info);
       } catch (e: unknown) {
         //
       }
     }
 
-    if (counterContract) {
+    if (contract) {
       const interval = setInterval(() => {
         getInfo();
       }, 2000);
 
       return () => clearInterval(interval);
     }
-  }, [counterContract]);
+  }, [contract]);
 
   return {
     info: info,
-    address: counterContract?.address.toString(),
+    address: contract?.address.toString(),
     sendStart: () => {
-      return counterContract?.send(
+      return contract?.send(
         sender,
         {
           value: toNano('0.1'),
@@ -52,19 +52,19 @@ export function useCounterContract() {
       );
     },
     sendBid: () => {
-      return counterContract?.send(
+      return contract?.send(
         sender,
         {
-          value: toNano('0.1'),
+          value: info.bid + toNano('0.01'),
         },
         'bid',
       );
     },
     sendWithdraw: () => {
-      return counterContract?.send(
+      return contract?.send(
         sender,
         {
-          value: toNano('0.1'),
+          value: toNano('0.01'),
         },
         'withdraw',
       );
