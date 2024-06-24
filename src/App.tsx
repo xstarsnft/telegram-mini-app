@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import '@twa-dev/sdk';
 import './App.css';
 import { TonConnectButton } from '@tonconnect/ui-react';
@@ -10,6 +11,19 @@ import { Ended } from './components/Ended';
 function App() {
   const { sender, connected } = useTonConnect();
   const { info, countdown } = useContract();
+  const [rate, setRate] = useState<null | number>(null);
+
+  useEffect(() => {
+    function updateRate() {
+      fetch('https://tonapi.io/v2/rates?tokens=ton&currencies=usd')
+        .then(response => response.json())
+        .then(data => setRate(Number(data['rates']['TON']['prices']['USD'])));
+    }
+
+    const interval = setInterval(() => {updateRate();}, 10000);
+
+    return () => clearInterval(interval);
+  }, []);
 
   return (
     <ContractProvider>
@@ -19,9 +33,9 @@ function App() {
           {
             (() => {
               if (info?.state == "ONGOING" && countdown) {
-                if (countdown < -20) return <Idle connected={connected} bank={info.bank}/>
-                else return <Ongoing connected={connected} is_challenger={!!(sender?.address && info?.challenger?.equals(sender?.address))}/>
-              } else if (info?.state == "ENDED") return <Ended connected={connected} is_challenger={!!(sender?.address && info?.challenger?.equals(sender?.address))}/>
+                if (countdown < -20) return <Idle connected={connected} rate={rate}/>
+                else return <Ongoing connected={connected} is_challenger={!!(sender?.address && info?.challenger?.equals(sender?.address))} rate={rate}/>
+              } else if (info?.state == "ENDED") return <Ended connected={connected} is_challenger={!!(sender?.address && info?.challenger?.equals(sender?.address))} rate={rate}/>
               else return <div/>
             })()
           }

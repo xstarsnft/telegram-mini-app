@@ -3,17 +3,23 @@ import { useContract } from './ContractProvider';
 
 type Props = {
   connected: boolean,
-  bank: bigint | null,
+  rate: number | null,
 };
 
-export function Idle({connected, bank}: Props) {
+export function Idle({connected, rate}: Props) {
   const { info, sendBid } = useContract();
 
   return (
     <div>
       <div className='Card'>
         <b>Bank</b>
-        <div>{bank ? fromNano(bank * 5n / 10n) + ' TON' : 'Loading...'}</div>
+        {info.bank
+          ? <>
+            <div>{fromNano(info.bank * 5n / 10n) + ' TON'}</div>
+            <div>{rate ? '(' + (Number(fromNano(info.bank * 5n / 10n)) * rate).toFixed(2) + ' USD)' : ''}</div>
+          </>
+          : 'Loading...'
+        }
       </div>
 
       <div className='Card'>

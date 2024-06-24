@@ -14,7 +14,7 @@ interface IContractContext {
 const ContractContext = createContext<IContractContext>({} as IContractContext);
 
 type ContextProviderProps = {
-    children?: ReactNode
+  children?: ReactNode
 }
 
 export const ContractProvider = ({ children }: ContextProviderProps) => {
