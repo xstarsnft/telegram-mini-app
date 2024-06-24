@@ -13,7 +13,7 @@ export function useCounterContract() {
   const contract = useAsyncInitialize(async () => {
     if (!client) return;
     const contract = PennyAuction.fromAddress(
-      Address.parse('EQBVlTYhL1_wT2JtjFqlQ7bLbG4D3c39-Fl1n9wxAoaizHSO')
+      Address.parse('EQBAla-L5j9TtPxcwRsWsub7Gdijt-fw1GBd4WzQMGAY-q0w')
     );
     return client.open(contract) as OpenedContract<PennyAuction>;
   }, [client]);
